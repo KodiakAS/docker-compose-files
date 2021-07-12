@@ -1,0 +1,43 @@
+version: "3"
+
+services:
+  sonarqube:
+    image: sonarqube
+    container_name: sonarqube
+    restart: 'no'
+    networks:
+      - sonarnet
+    environment:
+      - sonar.jdbc.username=sonar
+      - sonar.jdbc.password=sonar
+      - sonar.jdbc.url=jdbc:postgresql://sonarqube-postgre:5432/sonarqube
+      - sonar.search.javaOpts=-Xms256m -Xmx256m
+    ports:
+      - "9010:9000"
+      - "9011:9092"
+    depends_on:
+      - sonarqube-postgre
+    links:
+      - sonarqube-postgre
+    volumes:
+      - /opt/docker_volumes/sonarqube/sonarqube_data:/opt/sonarqube/data
+      - /opt/docker_volumes/sonarqube/sonarqube_extensions:/opt/sonarqube/extensions
+      - /opt/docker_volumes/sonarqube/sonarqube_bundled-plugins:/opt/sonarqube/lib/bundled-plugins
+      
+  sonarqube-postgre:
+    image: postgres
+    container_name: sonarqube-postgre
+    restart: 'no'
+    networks:
+        - sonarnet
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_DB=sonarqube
+    volumes:
+      - /opt/docker_volumes/sonarqube/postgre/sonarqube_postgre_db:/var/lib/postgresql
+      - /opt/docker_volumes/sonarqube/postgre/sonarqube_postgre_data:/var/lib/postgresql/data
+
+networks:
+  sonarnet:
+    driver: bridge
